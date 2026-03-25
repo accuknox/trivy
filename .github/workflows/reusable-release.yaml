@@ -12,19 +12,11 @@ on:
         required: false
         type: string
     secrets:
-      DOCKERHUB_USER:
+      AWS_DEV_ACCESS_ID:
         required: true
-      DOCKERHUB_TOKEN:
+      AWS_DEV_SECRET_ID:
         required: true
-      ECR_ACCESS_KEY_ID:
-        required: true
-      ECR_SECRET_ACCESS_KEY:
-        required: true
-      GPG_KEY:
-        required: true
-      ORG_REPO_TOKEN:
-        required: true
-      GPG_PASSPHRASE:
+      GH_ORG_TOKEN:
         required: true
 
 env:
@@ -57,25 +49,12 @@ jobs:
           PLATFORMS: ${{ steps.buildx.outputs.platforms }}
         run: echo "${PLATFORMS}"
 
-      - name: Login to docker.io registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
-        with:
-          username: ${{ secrets.DOCKERHUB_USER }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Login to ghcr.io registry
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
-        with:
-          registry: ghcr.io
-          username: ${{ env.GH_USER }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Login to ECR
+      - name: Login to public ECR
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
         with:
           registry: public.ecr.aws
-          username: ${{ secrets.ECR_ACCESS_KEY_ID }}
-          password: ${{ secrets.ECR_SECRET_ACCESS_KEY }}
+          username: ${{ secrets.AWS_DEV_ACCESS_ID }}
+          password: ${{ secrets.AWS_DEV_SECRET_ID }}
 
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -92,16 +71,10 @@ jobs:
           args: mod -licenses -json -output bom.json
           version: ^v1
 
-      - name: "save gpg key"
-        env:
-          GPG_KEY: ${{ secrets.GPG_KEY }}
-        run: |
-          echo "$GPG_KEY" > gpg.key
-
       # Create tmp dir for GoReleaser
       - name: "create tmp dir"
         run: |
-          mkdir tmp    
+          mkdir tmp
 
       - name: GoReleaser
         id: goreleaser
@@ -110,14 +83,8 @@ jobs:
           version: v2.1.0
           args: release -f=${{ inputs.goreleaser_config}} ${{ inputs.goreleaser_options}}
         env:
-          GITHUB_TOKEN: ${{ secrets.ORG_REPO_TOKEN }}
-          NFPM_DEFAULT_RPM_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_FILE: "gpg.key"
+          GITHUB_TOKEN: ${{ secrets.GH_ORG_TOKEN }}
           TMPDIR: "tmp"
-
-      - name: "remove gpg key"
-        run: |
-          rm gpg.key
 
       # Push images to registries (only for canary build)
       # The custom Dockerfile.canary is necessary
@@ -131,9 +98,7 @@ jobs:
           context: .
           push: true
           tags: |
-            aquasec/trivy:canary
-            ghcr.io/aquasecurity/trivy:canary
-            public.ecr.aws/aquasecurity/trivy:canary
+            public.ecr.aws/k9v9d5v2/accuknox/trivy:canary
 
       - name: Generate build provenance attestations
         if: ${{ inputs.goreleaser_config != 'goreleaser-canary.yml' }}
