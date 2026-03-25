@@ -78,7 +78,6 @@ builds:
 release:
     extra_files:
       - glob: ./bom.json
-    discussion_category_name: Announcements
 
 # ---------------------------------------------------------------------------
 # MANUALLY BLOCKED: nfpms (deb/rpm package builds) disabled for AccuKnox's fork.
