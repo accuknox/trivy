@@ -2,21 +2,25 @@ name: Canary build
 on:
   push:
     branches:
-      - 'main'
+      - "main"
     paths:
-      - '**.go'
-      - 'go.mod'
-      - 'Dockerfile.canary'
-      - '.github/workflows/canary.yaml'
+      - "**.go"
+      - "go.mod"
+      - "Dockerfile.canary"
+      - ".github/workflows/canary.yaml"
   workflow_dispatch:
 
 jobs:
   build-binaries:
     name: Build binaries
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     uses: ./.github/workflows/reusable-release.yaml
     with:
       goreleaser_config: goreleaser-canary.yml
-      goreleaser_options: '--snapshot --clean --timeout 60m' # will not release
+      goreleaser_options: "--snapshot --clean --timeout 60m" # will not release
     secrets:
       AWS_DEV_ACCESS_ID: ${{ secrets.AWS_DEV_ACCESS_ID }}
       AWS_DEV_SECRET_ID: ${{ secrets.AWS_DEV_SECRET_ID }}

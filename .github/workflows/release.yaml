@@ -7,10 +7,14 @@ on:
 jobs:
   release:
     name: Release
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
     uses: ./.github/workflows/reusable-release.yaml
     with:
       goreleaser_config: goreleaser.yml
-      goreleaser_options: '--clean --timeout 90m'
+      goreleaser_options: "--clean --timeout 90m"
     secrets:
       AWS_DEV_ACCESS_ID: ${{ secrets.AWS_DEV_ACCESS_ID }}
       AWS_DEV_SECRET_ID: ${{ secrets.AWS_DEV_SECRET_ID }}
