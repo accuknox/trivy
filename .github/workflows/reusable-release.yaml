@@ -3,12 +3,12 @@ on:
   workflow_call:
     inputs:
       goreleaser_config:
-        description: 'file path to GoReleaser config'
+        description: "file path to GoReleaser config"
         required: true
         type: string
       goreleaser_options:
-        description: 'GoReleaser options separated by spaces'
-        default: ''
+        description: "GoReleaser options separated by spaces"
+        default: ""
         required: false
         type: string
     secrets:
@@ -30,8 +30,7 @@ jobs:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     permissions:
       id-token: write # For cosign
-      packages: write # For GHCR
-      contents: read  # Not required for public repositories, but for clarity
+      contents: read # Not required for public repositories, but for clarity
       attestations: write # For build provenance attestations
     steps:
       - name: Cosign install
